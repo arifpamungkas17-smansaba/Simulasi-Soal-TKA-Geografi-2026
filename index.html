@@ -237,7 +237,7 @@
             </div>
         </section>
 
-        <!-- VIEW 3: STUDENT RESULT SCREEN (Displays ONLY score, NO answer key) -->
+        <!-- VIEW 3: STUDENT RESULT SCREEN -->
         <section id="viewHasilSiswa" class="hidden max-w-lg mx-auto my-8">
             <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 text-center space-y-6">
                 <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
@@ -551,7 +551,7 @@ function doPost(e) {
         </div>
     </div>
 
-    <!-- MODAL ZOOM MEDIA (UNTUK PERBESAR GAMBAR/DIAGRAM SOAL) -->
+    <!-- MODAL ZOOM MEDIA -->
     <div id="modalZoomMedia" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] hidden flex flex-col items-center justify-center p-4">
         <div class="relative max-w-4xl w-full max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col">
             <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
@@ -563,18 +563,15 @@ function doPost(e) {
                 </button>
             </div>
             <div id="modalZoomContainer" class="p-6 flex-grow flex items-center justify-center overflow-auto bg-slate-100">
-                <!-- Media injected dynamically by JavaScript -->
+                <!-- Media injected dynamically -->
             </div>
         </div>
     </div>
 
     <!-- JAVASCRIPT APPLICATION LOGIC -->
     <script>
-        // Kunci Jawaban Resmi sesuai Naskah
-        // 1:D, 2:E, 3:E, 4:E, 5:C, 6:C, 7:D, 8:D, 9:A, 10:A, 11:E, 12:A, 13:A, 14:D, 15:A, 16:B, 17:B, 18:C, 19:A, 20:C
         const KUNCI_JAWABAN = ['D', 'E', 'E', 'E', 'C', 'C', 'D', 'D', 'A', 'A', 'E', 'A', 'A', 'D', 'A', 'B', 'B', 'C', 'A', 'C'];
 
-        // Question Bank - Dilengkapi Gambar & Inline SVG Bebas Kendala untuk No 4, 5, 6, 7, 16, 18
         const SOAL_LIST = [
             {
                 no: 1,
@@ -612,7 +609,7 @@ function doPost(e) {
             {
                 no: 4,
                 teks: "Aktivitas penduduk yang paling sesuai untuk dikembangkan pada lokasi berikut adalah ....",
-                gambar: "soal-4.jpg.png",
+                gambar: "images/soal-4.jpg",
                 opsi: {
                     A: "Pertambangan",
                     B: "Permukiman",
@@ -624,7 +621,7 @@ function doPost(e) {
             {
                 no: 5,
                 teks: "Perhatikan gambar lapisan atmosfer berikut! Lapisan atmosfer pada angka V seperti gambar berfungsi sebagai ....",
-                gambar: "soal-5.jpg.png",
+                gambar: "images/soal-5.jpg",
                 opsi: {
                     A: "Tempat terjadinya gejala cuaca iklim",
                     B: "Pelindung bumi dari panasnya meteor",
@@ -636,6 +633,7 @@ function doPost(e) {
             {
                 no: 6,
                 teks: "Perhatikan fenomena-fenomena geosfer berikut ini!<br>(1) Peristiwa gempa di Yogyakarta.<br>(2) Peningkatan jumlah pengangguran.<br>(3) Meningkatnya permukiman kumuh (slum area).<br>(4) Terdesaknya lingkungan adat oleh pembangunan modern.<br>(5) Merebaknya kabut asap di beberapa wilayah di Indonesia.<br><br>Fenomena yang termasuk aspek sosial adalah....",
+                gambar: "images/soal-6.jpg",
                 opsi: {
                     A: "(1), (2), dan (3)",
                     B: "(1), (2), dan (4)",
@@ -647,7 +645,7 @@ function doPost(e) {
             {
                 no: 7,
                 teks: "Perhatikan peta wilayah persebaran fauna di Indonesia berikut! Hewan endemik dari wilayah angka 3 seperti gambar adalah ....",
-                gambar: "soal-7.jpg.png",
+                gambar: "images/soal-7.jpg",
                 opsi: {
                     A: "Kera, badak dan harimau",
                     B: "Badak, harimau dan anoa",
@@ -746,8 +744,8 @@ function doPost(e) {
             },
             {
                 no: 16,
-                teks: "Perhatikan gambar model struktur ruang kota (Teori sektoral) berikut! Zona Central Business District (CBD) dan permukiman kelas rendah ditunjukkan oleh angka....",
-                gambar: "soal-16.jpg.png",
+                teks: "Perhatikan gambar model struktur ruang kota (Teori Konsentris Burgess) berikut! Zona Central Business District (CBD) dan permukiman kelas rendah ditunjukkan oleh angka....",
+                gambar: "images/soal-16.jpg",
                 opsi: {
                     A: "1 dan 2",
                     B: "1 dan 3",
@@ -770,7 +768,7 @@ function doPost(e) {
             {
                 no: 18,
                 teks: "Perhatikan gambar Teori Sektoral berikut ini! Pada gambar di bawah, zona nomor 5 menunjukkan ....",
-                gambar: "soal-18.jpg.png",
+                gambar: "images/soal-18.jpg",
                 opsi: {
                     A: "Permukiman kelas rendah",
                     B: "Permukiman kelas menengah",
@@ -803,17 +801,15 @@ function doPost(e) {
             }
         ];
 
-        // App State
-        let activeToken = "GEO2026";
-        let currentSiswa = null; // { nama, kelas, startTime }
+        // App State dengan Permanensi localStorage
+        let activeToken = localStorage.getItem('sman1_baturetno_geo_token') || "GEO2026";
+        let currentSiswa = null;
         let currentSoalIndex = 0;
-        let userAnswers = {}; // { 1: 'A', 2: 'E', ... }
+        let userAnswers = {};
         let examTimerInterval = null;
-        let timeRemainingSeconds = 3600; // 60 minutes default
+        let timeRemainingSeconds = 3600;
 
         let webhookUrl = localStorage.getItem('sman1_baturetno_webhook_url') || '';
-
-        // Submissions Store (stored in localStorage for persistence)
         let submissionsList = JSON.parse(localStorage.getItem('sman1_baturetno_geo_results') || '[]');
 
         window.onload = function() {
@@ -844,6 +840,8 @@ function doPost(e) {
             } else if (viewName === 'dashboardGuru') {
                 document.getElementById('viewDashboardGuru').classList.remove('hidden');
                 navAction.innerHTML = `<span class="text-xs bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-user-tie"></i> Mode Guru</span>`;
+                // Pastikan data terbaru di-load ulang dari localStorage setiap membuka dashboard
+                submissionsList = JSON.parse(localStorage.getItem('sman1_baturetno_geo_results') || '[]');
                 renderDashboardGuru();
             }
         }
@@ -864,7 +862,6 @@ function doPost(e) {
                 return;
             }
 
-            // Init student state
             currentSiswa = {
                 nama: nama,
                 kelas: kelas,
@@ -875,7 +872,6 @@ function doPost(e) {
             currentSoalIndex = 0;
             timeRemainingSeconds = 3600;
 
-            // Render Header Siswa Info
             document.getElementById('labelSiswaNama').innerText = currentSiswa.nama;
             document.getElementById('labelSiswaKelas').innerText = currentSiswa.kelas;
             document.getElementById('badgeSiswaAvatar').innerText = getInitials(currentSiswa.nama);
@@ -917,11 +913,9 @@ function doPost(e) {
 
             document.getElementById('labelNomorSoal').innerText = q.no;
 
-            // Teks, Link Gambar Foto, atau SVG Diagram Soal
             let contentHtml = `<p class="font-semibold text-slate-800 leading-relaxed">${q.teks}</p>`;
             
             if (q.gambar) {
-                // Opsi 1: Menggunakan Link URL Gambar Foto (JPG/PNG)
                 contentHtml += `
                     <div class="my-4 text-center">
                         <img src="${q.gambar}" alt="Gambar Soal ${q.no}" 
@@ -934,7 +928,6 @@ function doPost(e) {
                     </div>
                 `;
             } else if (q.svg) {
-                // Opsi 2: Menggunakan Kode Vektor SVG
                 contentHtml += `
                     <div class="my-4 text-center">
                         <div onclick="openSvgZoom(${index}, 'Diagram Soal No. ${q.no}')" 
@@ -948,10 +941,9 @@ function doPost(e) {
                 `;
             }
 
-            document.getElementById('containerPilihanJawaban').innerHTML = ''; // Rest of method
+            document.getElementById('containerPilihanJawaban').innerHTML = '';
             document.getElementById('containerTeksSoal').innerHTML = contentHtml;
 
-            // Pilihan Jawaban
             let optionsHtml = '';
             const letters = ['A', 'B', 'C', 'D', 'E'];
             letters.forEach(letter => {
@@ -972,7 +964,6 @@ function doPost(e) {
             });
             document.getElementById('containerPilihanJawaban').innerHTML = optionsHtml;
 
-            // Navigation Button Status
             document.getElementById('btnSoalPrev').disabled = (index === 0);
             document.getElementById('btnSoalPrev').classList.toggle('opacity-50', index === 0);
 
@@ -1045,7 +1036,7 @@ function doPost(e) {
         async function submitExam() {
             clearInterval(examTimerInterval);
 
-            // Calculate Score
+            // 1. Hitung Nilai Akhir
             let correctCount = 0;
             SOAL_LIST.forEach((q, idx) => {
                 const userAns = userAnswers[q.no];
@@ -1055,7 +1046,7 @@ function doPost(e) {
                 }
             });
 
-            const score = correctCount * 5; // 20 questions * 5 = 100 points
+            const score = correctCount * 5;
             const finishTime = new Date().toLocaleString('id-ID');
 
             const submissionData = {
@@ -1069,26 +1060,43 @@ function doPost(e) {
                 jawaban: { ...userAnswers }
             };
 
-            // 1. Simpan di Lokal Browser Siswa (Penyimpanan Utama / Cadangan Offline)
+            // 2. Simpan Permanen ke localStorage Browser
+            submissionsList = JSON.parse(localStorage.getItem('sman1_baturetno_geo_results') || '[]');
             submissionsList.push(submissionData);
             localStorage.setItem('sman1_baturetno_geo_results', JSON.stringify(submissionsList));
 
-            // 2. Simpan ke Server Cloud / Google Sheets (Jika URL Integrasi Webhook Dikonfigurasi Guru)
+            // 3. Pengiriman data ke Google Sheets menggunakan sendBeacon dan fallback fetch (mode: no-cors)
             if (webhookUrl) {
-                try {
-                    await fetch(webhookUrl, {
-                        method: 'POST',
-                        mode: 'no-cors', // Menghindari isu CORS pada Web App Google Apps Script
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(submissionData)
-                    });
-                    console.log("Data jawaban siswa berhasil dikirim ke Cloud Webhook.");
-                } catch (err) {
-                    console.error("Gagal mengirim jawaban ke Cloud Webhook:", err);
+                const payload = JSON.stringify(submissionData);
+                let sentViaBeacon = false;
+
+                if (navigator.sendBeacon) {
+                    try {
+                        const blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
+                        sentViaBeacon = navigator.sendBeacon(webhookUrl, blob);
+                    } catch (e) {
+                        console.warn('sendBeacon gagal, mengalihkan ke fetch mode no-cors:', e);
+                    }
+                }
+
+                if (!sentViaBeacon) {
+                    try {
+                        await fetch(webhookUrl, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+                            body: payload
+                        });
+                        console.log("Data jawaban siswa berhasil dikirim via fetch (no-cors).");
+                    } catch (err) {
+                        console.error("Gagal mengirim jawaban ke Cloud Webhook:", err);
+                    }
+                } else {
+                    console.log("Data jawaban siswa berhasil dikirim via navigator.sendBeacon.");
                 }
             }
 
-            // Render Student Results (SCORE ONLY, NO ANSWER KEY DISPLAYED)
+            // 4. Render Layar Hasil Siswa
             document.getElementById('resultNamaSiswa').innerText = currentSiswa.nama;
             document.getElementById('resultKelasSiswa').innerText = currentSiswa.kelas;
             document.getElementById('resultWaktuSelesai').innerText = finishTime;
@@ -1262,12 +1270,12 @@ function doPost(e) {
                 return;
             }
             activeToken = newToken;
+            localStorage.setItem('sman1_baturetno_geo_token', activeToken);
             renderActiveToken();
             closeModal('modalToken');
             alert(`Kode akses ujian berhasil diubah menjadi: ${activeToken}`);
         }
 
-        // Fungsi untuk memperbesar gambar foto (JPG/PNG)
         function openImageZoom(imgUrl, title) {
             document.getElementById('modalZoomTitle').innerText = title;
             document.getElementById('modalZoomContainer').innerHTML = `
@@ -1276,7 +1284,6 @@ function doPost(e) {
             document.getElementById('modalZoomMedia').classList.remove('hidden');
         }
 
-        // Fungsi untuk memperbesar gambar diagram SVG
         function openSvgZoom(soalIdx, title) {
             const q = SOAL_LIST[soalIdx];
             if (!q || !q.svg) return;
@@ -1298,7 +1305,6 @@ function doPost(e) {
             document.getElementById(id).classList.add('hidden');
         }
 
-        // Export data to CSV file for Excel
         function exportToCSV() {
             if (submissionsList.length === 0) {
                 alert('Belum ada data pekerjaan siswa untuk diekspor!');
@@ -1330,7 +1336,6 @@ function doPost(e) {
             document.body.removeChild(link);
         }
 
-        // Export data to JSON file for GitHub Repository commit
         function exportToJSON() {
             if (submissionsList.length === 0) {
                 alert('Belum ada data pekerjaan siswa untuk diekspor!');
